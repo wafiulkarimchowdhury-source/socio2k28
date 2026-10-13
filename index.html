@@ -104,7 +104,7 @@ textarea{resize:none;min-height:80px;margin:10px 0}
   <h1>Socio2k28</h1>
   <p class="sub">Just for us. Pick a nickname and a 6-digit PIN.</p>
   <input id="nick" placeholder="nickname (letters, numbers, _)" autocapitalize="none" autocomplete="username" maxlength="20">
-  <input id="pin" type="password" inputmode="numeric" placeholder="6-digit PIN" maxlength="6" autocomplete="current-password">
+  <input id="pin" type="password" inputmode="numeric" placeholder="6-digit PIN" maxlength="6" autocomplete="off">
   <div id="err"></div>
   <button class="btn" id="login">Log in</button>
   <button class="btn sec" id="signup">Create account</button>
@@ -179,9 +179,10 @@ function modal(html) {
 /* ---------- auth ---------- */
 async function doAuth(mode) {
   const err = $('#err'); err.textContent = '';
-  const nick = $('#nick').value.trim().toLowerCase(), pin = $('#pin').value;
+  const toAscii = v => String(v).replace(/[\u09E6-\u09EF]/g, c => c.charCodeAt(0) - 0x09E6).replace(/[\u0660-\u0669]/g, c => c.charCodeAt(0) - 0x0660).replace(/[\u06F0-\u06F9]/g, c => c.charCodeAt(0) - 0x06F0).replace(/[\uFF10-\uFF19]/g, c => c.charCodeAt(0) - 0xFF10).replace(/\s+/g, '');
+  const nick = toAscii($('#nick').value).toLowerCase(), pin = toAscii($('#pin').value);
   if (!/^[a-z0-9_]{3,20}$/.test(nick)) return err.textContent = 'Nickname: 3-20 letters, numbers or _';
-  if (!/^\d{6}$/.test(pin)) return err.textContent = 'PIN must be exactly 6 digits';
+  if (!/^\d{6}$/.test(pin)) return err.textContent = `PIN must be exactly 6 numbers (0-9). I received ${pin.length} character(s)${/\D/.test(pin) ? ', and some are not numbers' : ''}. Clear the box and type it again.`;
   $('#login').disabled = $('#signup').disabled = true;
   try {
     if (mode === 'signup') {
